@@ -61,12 +61,14 @@ class AuthController extends Controller
     {
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
-            $success['token'] = $user->createToken('DonorConnect')->plainTextToken;
-            $success['name'] = $user->name;
+            $token = $user->createToken('DonorConnect')->plainTextToken;
 
             $response = [
                 'success' => true,
-                'data' => $success,
+                'data' => [
+                    'token' => $token,
+                    'user_details' => $user
+                ],
                 'message' => 'User Logged In Successfully'
             ];
             return response()->json($response, 200);
