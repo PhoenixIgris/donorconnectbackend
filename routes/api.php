@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\Api\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,4 +24,6 @@ Route::controller(AuthController::class)->group(function(){
     Route::post('register', 'register');
 });
 
+//edit profile
+Route::apiResource('profiles', ProfileController::class);
 
