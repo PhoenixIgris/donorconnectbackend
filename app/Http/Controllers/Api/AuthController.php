@@ -81,4 +81,41 @@ class AuthController extends Controller
             return response()->json($response);
         }
     }
-}
+
+    public function edit()
+    {
+        $user = Auth::user();
+        return response()->json(['user' => $user]);
+    }
+
+    public function update(Request $request)
+    {
+        $user = Auth::user();
+    
+        try {
+            $validatedData = $request->validate([
+                'first_name' => 'required',
+                'last_name' => 'required',
+                'email' => 'required|email|unique:users,email,' . $user->id,
+                'password' => 'required|min:8',
+                'fmc_token' => 'nullable|string|unique:users,fmc_token,' . $user->id,
+                'phone_number' => 'required',
+                'address' => 'required'
+            ]);
+    
+            $validatedData['password'] = bcrypt($validatedData['password']);
+    
+            $user->update($validatedData);
+    
+            $response = [
+                'success' => true,
+                'message' => 'Profile updated successfully',
+                'user_details' => $user
+            ];
+    
+            return response()->json($response, 200);
+        } catch (\Exception $exception) {
+            return response()->json($exception->getMessage(), 500);
+        }
+    }
+}    
