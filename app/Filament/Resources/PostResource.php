@@ -3,15 +3,12 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\PostResource\Pages;
-use App\Filament\Resources\PostResource\RelationManagers;
 use App\Models\Post;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PostResource extends Resource
 {
@@ -23,7 +20,7 @@ class PostResource extends Resource
     {
         return $form
             ->schema([
-              
+
                 Forms\Components\TextInput::make('title')
                     ->required()
                     ->default('box')
@@ -33,16 +30,19 @@ class PostResource extends Resource
                     ->columnSpanFull()
                     ->maxLength(255),
                 Forms\Components\Select::make('category_id')
-                ->relationship('category','name')
-                ->label('Condition'),
+                    ->relationship('category', 'name')
+                    ->label('Condition'),
                 Forms\Components\Select::make('tag_id')
-                ->relationship('tag','name')
-                ->label('Tag'),
+                    ->relationship('tag', 'name')
+                    ->label('Tag'),
                 Forms\Components\Select::make('user_id')
                     ->required()
-                    ->relationship('user','name'),
-                    Forms\Components\FileUpload::make('image')
-                    ->image(),
+                    ->relationship('user', 'name'),
+                Forms\Components\FileUpload::make('image')
+                ->disk('s3')
+                ->image()
+                ->directory('images')
+                ->preserveFilenames()
             ]);
     }
 
