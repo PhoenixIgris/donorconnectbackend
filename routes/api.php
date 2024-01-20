@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\PostController;
+use App\Http\Controllers\ImageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +41,8 @@ Route::group(['prefix' => 'category'], function () {
 Route::group(['prefix' => 'tag'], function () {
     Route::get('getTagList', [TagController::class, 'getTagList']);
 });
+  
+
 
 
 
