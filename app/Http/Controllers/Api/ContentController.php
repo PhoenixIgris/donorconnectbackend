@@ -4,21 +4,23 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\Tag;
 use Exception;
-use Illuminate\Http\Request;
 
 
-class CategoryController extends Controller
+class ContentController extends Controller
 {
-    public function getCategoryList()
+    public function getInitContents()
     {
         try {
             $categories = Category::all();
+            $tags = Tag::all();
             return response()->json([
                 'success' => true,
                 'message' =>'Categories List fetched successfully',
                 'data' => [
-                    'categories' =>   $categories
+                    'categories' =>   $categories,
+                    'tags' => $tags
                 ]
             ]);
         } catch (Exception $e) {
@@ -29,5 +31,4 @@ class CategoryController extends Controller
         }
 
     }
-
 }

@@ -6,7 +6,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\PostController;
-use App\Http\Controllers\ImageController;
+use App\Http\Controllers\Api\ContentController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -31,6 +32,9 @@ Route::controller(AuthController::class)->group(function(){
 Route::group(['prefix' => 'post'], function () {
     Route::post('createPost', [PostController::class, 'createPost']);
     Route::post('getAllPosts', [PostController::class, 'getAllPosts']);
+    Route::post('getPostsByTags', [PostController::class, 'getPostsByTags']);
+    Route::post('getPostsByCategoryId', [PostController::class, 'getPostsByCategoryId']);
+
 });
 
 
@@ -40,6 +44,10 @@ Route::group(['prefix' => 'category'], function () {
 
 Route::group(['prefix' => 'tag'], function () {
     Route::get('getTagList', [TagController::class, 'getTagList']);
+});
+
+Route::group(['prefix' => 'content'], function () {
+    Route::get('init-content', [ContentController::class, 'getInitContents']);
 });
   
 

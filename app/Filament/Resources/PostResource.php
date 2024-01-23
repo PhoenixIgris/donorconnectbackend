@@ -32,17 +32,14 @@ class PostResource extends Resource
                 Forms\Components\Select::make('category_id')
                     ->relationship('category', 'name')
                     ->label('Condition'),
-                Forms\Components\Select::make('tag_id')
-                    ->relationship('tag', 'name')
+                Forms\Components\MultiSelect::make('tag_id')
+                    ->relationship('tags', 'name')
                     ->label('Tag'),
                 Forms\Components\Select::make('user_id')
                     ->required()
                     ->relationship('user', 'name'),
                 Forms\Components\FileUpload::make('image')
-                ->disk('s3')
                 ->image()
-                ->directory('images')
-                ->preserveFilenames()
             ]);
     }
 
