@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Models\Tag;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -38,6 +39,8 @@ class PostController extends Controller
             ]);
             $taglist = $request->input('tag_id');
             sort($taglist);
+
+            // $tags = Tag::whereIn('id', $taglist)->get();
             $image = explode('base64,', $request->input('image'));
             $image = end($image);
             $image = str_replace(' ', '+', $image);
@@ -62,6 +65,7 @@ class PostController extends Controller
                 'title' => $request->input('title'),
                 'desc' => $request->input('desc'),
                 'category_id' => $request->input('category_id'),
+                // 'tag_id' => $tags,
                 'tag_id' => $taglist,
                 'user_id' => $user_id,
                 'user_image' => $user->$image
@@ -95,7 +99,11 @@ class PostController extends Controller
 
             $posts = Post::where('user_id', $user_id)->get();
 
-            return response()->json(['posts' => $posts]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Post were successfully fetched',
+                'posts' => $posts,
+            ]);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -142,6 +150,36 @@ class PostController extends Controller
                 'message' => 'Post were successfully fetched',
                 'posts' => $posts,
             ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function getPostById(Request $request)
+    {
+        try {
+            $postId = $request->input('post_id');
+            if (empty($postId)) {
+                return response()->json(['error' => 'Invalid or empty ID provided'], 400);
+            }
+            $posts = Post::where('id', $postId)->first();
+            if ($posts == null) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No post Found',
+                ], 200);
+            } else {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Post successfully fetched',
+                    'data' =>[
+                        'post_detail' => $posts,
+                    ]
+                ], 200);
+            }
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,

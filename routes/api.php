@@ -32,6 +32,7 @@ Route::controller(AuthController::class)->group(function(){
 Route::group(['prefix' => 'post'], function () {
     Route::post('createPost', [PostController::class, 'createPost']);
     Route::post('getAllPosts', [PostController::class, 'getAllPosts']);
+    Route::post('getPost', [PostController::class, 'getPostById']);
     Route::post('getPostsByTags', [PostController::class, 'getPostsByTags']);
     Route::post('getPostsByCategoryId', [PostController::class, 'getPostsByCategoryId']);
 
