@@ -12,6 +12,26 @@ class Post extends Model
 
     protected $guarded=[];
 
+
+    public static function boot()
+    {
+        parent::boot();
+
+        self::creating(function ($model) {
+            $model->queue_code = self::generateUniqueQueueCode();
+        });
+    }
+
+
+    private static function generateUniqueQueueCode()
+    {
+        do {
+            $code = \Illuminate\Support\Str::uuid()->toString(); // Generate UUID
+        } while (self::where('queue_code', $code)->exists());
+
+        return $code;
+    }
+
     public function category(){
         return $this->belongsTo(Category::class,'category_id');
     }

@@ -92,7 +92,7 @@ class PostController extends Controller
             ]);
 
             $user_id = $request->input('user_id');
-            $posts = Post::with(['user', 'tags'])->get();
+            $posts = Post::with(['user', 'tags', 'requestQueues'])->get();
 
             return response()->json([
                 'success' => true,
@@ -118,6 +118,7 @@ class PostController extends Controller
                     $query->orWhere('tag_id', 'like', "%$tagId%");
                 }
             })->get();
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Post were successfully fetched',
@@ -190,26 +191,28 @@ class PostController extends Controller
             $post = Post::where('id', $postId)->first();
             $userId = $request->input('user_id');
             if (RequestQueue::where('post_id', $postId)->where('user_id', $userId)->exists()) {
-                return response()->json(['message' => 'You have already requested this post.'], 400);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'You have already requested this post.'
+                ], 200);
             }
             $isFirstRequest = !RequestQueue::where('post_id', $postId)->exists();
             $lastPosition = RequestQueue::where('post_id', $postId)->max('position') ?? 0;
-            $queue_code = null;
-            $request =       RequestQueue::create([
+            $request = RequestQueue::create([
                 'post_id' => $postId,
                 'user_id' => $userId,
                 'position' => $lastPosition + 1
             ]);
-            $request_queue =RequestQueue::where('post_id', $postId)->where('user_id',$userId);
             if ($isFirstRequest) {
-                $queue_code = $request->queue_code;
-                $request_queue->update(['status' => Status::REQUESTED]);
+                $post->update([
+                    'current_request_user_id' => $userId,
+                    'status' => Status::REQUESTED
+                ]);
                 return response()->json([
                     'success' => true,
                     'message' => 'Request added to the queue.',
                     'isFirstRequest' => $isFirstRequest,
                     'delivery_details' => [
-                        'queue_code' => $queue_code,
                         'message' => 'Please receive your item in the following location and time with given code. ',
                         'address' => $post->address,
                         'contact_number' => $post->phone_number
@@ -217,7 +220,7 @@ class PostController extends Controller
                 ]);
             } else {
                 $position = $lastPosition + 1;
-                $request_queue->update(['status' => Status::PENDING_REQUEST]);
+                $post->update(['pending_request_status' => Status::PENDING_REQUEST]);
                 $message = 'Request added to the queue. You are currently in ';
                 if ($position == 1) {
                     $message .= $position . 'st in line';
@@ -246,6 +249,7 @@ class PostController extends Controller
     {
         try {
             $postId = $request->input('post_id');
+            $post = Post::findOrFail($postId);
             $userId = $request->input('user_id');
             $requestQueue = RequestQueue::where('post_id', $postId)->where('user_id', $userId)->first();
 
@@ -254,13 +258,29 @@ class PostController extends Controller
             }
             RequestQueue::where('post_id', $postId)
                 ->where('position', '>', $requestQueue->position)
-                ->decrement('position');
-
-            $requestQueue->delete();
+                ->decrement('position');;
+                $requestQueue->delete();
+            $smallestPositionRequest = RequestQueue::where('post_id', $postId)
+                ->orderBy('position', 'asc')
+                ->first();
+            if ($smallestPositionRequest) {
+                $post->update([
+                    'current_request_user_id' => $smallestPositionRequest->user_id,
+                    'pending_request_status' => Status::PENDING_REQUEST
+                ]);
+            }else{
+                $post->update([
+                    'current_request_user_id' => null,
+                    'pending_request_status' => Status::VERIFIED
+                ]);
+            }
+          
 
             return response()->json([
                 'success' => true,
-                'message' => 'Request removed from the queue.'
+                'message' => 'Request removed from the queue.',
+                'request' => $requestQueue->position,
+                'previous' => $smallestPositionRequest
             ]);
         } catch (Exception $e) {
             return response()->json([

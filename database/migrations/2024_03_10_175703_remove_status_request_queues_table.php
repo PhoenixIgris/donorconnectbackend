@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Status;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,8 +13,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('request_queues', function (Blueprint $table) {
-            $table->string('queue_code')->unique()->nullable(); 
-
+          
+            $table->dropColumn('status');
         });
     }
 
@@ -23,8 +24,10 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('request_queues', function (Blueprint $table) {
-            $table->dropColumn('queue_code');
-
+           $table->enum('status', [
+                Status::UNVERIFIED, Status::VERIFIED, Status::REQUESTED,
+                Status::PENDING_REQUEST, Status::CLOSED
+            ])->nullable()->default(Status::UNVERIFIED);
         });
     }
 };

@@ -31,6 +31,7 @@ class PostResource extends Resource
                     ->required()
                     ->columnSpanFull()
                     ->maxLength(255),
+                    
                 Forms\Components\Select::make('category_id')
                     ->relationship('category', 'name')
                     ->label('Condition'),
@@ -41,6 +42,14 @@ class PostResource extends Resource
                     ->required()
                     ->relationship('user', 'name'),
                 Forms\Components\Select::make('status')
+                    ->options([
+                        Status::UNVERIFIED => Status::UNVERIFIED,
+                        Status::VERIFIED => Status::VERIFIED,
+                        Status::REQUESTED => Status::REQUESTED,
+                        Status::PENDING_REQUEST => Status::PENDING_REQUEST,
+                        Status::CLOSED => Status::CLOSED
+                    ]),
+                    Forms\Components\Select::make('pending_request_status')
                     ->options([
                         Status::UNVERIFIED => Status::UNVERIFIED,
                         Status::VERIFIED => Status::VERIFIED,
@@ -60,6 +69,10 @@ class PostResource extends Resource
                 Tables\Columns\ImageColumn::make('image'),
                 Tables\Columns\TextColumn::make('title')
                     ->searchable(),
+                    Tables\Columns\TextColumn::make('current_request_user_id')
+                    ->numeric(),
+                    Tables\Columns\TextColumn::make('pending_request_status')
+                 ,
                 Tables\Columns\TextColumn::make('desc')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('category.name')
