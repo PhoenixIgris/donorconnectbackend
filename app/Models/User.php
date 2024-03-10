@@ -29,6 +29,10 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    
+    protected $attributes = [
+        'image' => 'https://toppng.com/uploads/preview/circled-user-female-skin-type-4-icon-pro-icon-115534084504dcnr2bmdl.png',
+    ];
     /**
      * The attributes that should be cast.
      *

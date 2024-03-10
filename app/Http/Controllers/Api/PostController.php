@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\Status;
 use App\Http\Controllers\Controller;
 use App\Models\Post;
-use App\Models\Tag;
+use App\Models\RequestQueue;
 use App\Models\User;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Kreait\Firebase\Factory;
 
@@ -39,8 +40,6 @@ class PostController extends Controller
             ]);
             $taglist = $request->input('tag_id');
             sort($taglist);
-
-            // $tags = Tag::whereIn('id', $taglist)->get();
             $image = explode('base64,', $request->input('image'));
             $image = end($image);
             $image = str_replace(' ', '+', $image);
@@ -65,12 +64,11 @@ class PostController extends Controller
                 'title' => $request->input('title'),
                 'desc' => $request->input('desc'),
                 'category_id' => $request->input('category_id'),
-                // 'tag_id' => $tags,
-                'tag_id' => $taglist,
                 'user_id' => $user_id,
                 'user_image' => $user->$image
             ]);
-
+            $post->save();
+            $post->tags()->attach($taglist);
             return response()->json([
                 'success' => true,
                 'message' => "Successfully created post",
@@ -94,10 +92,7 @@ class PostController extends Controller
             ]);
 
             $user_id = $request->input('user_id');
-
-            $user = User::findOrFail($user_id);
-
-            $posts = Post::where('user_id', $user_id)->get();
+            $posts = Post::with(['user', 'tags'])->get();
 
             return response()->json([
                 'success' => true,
@@ -118,7 +113,7 @@ class PostController extends Controller
                 return response()->json(['error' => 'Invalid or empty tag IDs provided'], 400);
             }
             sort($requiredTagId);
-            $posts = Post::where(function ($query) use ($requiredTagId) {
+            $posts = Post::with('user')->where(function ($query) use ($requiredTagId) {
                 foreach ($requiredTagId as $tagId) {
                     $query->orWhere('tag_id', 'like', "%$tagId%");
                 }
@@ -144,7 +139,7 @@ class PostController extends Controller
             if (empty($categoryId)) {
                 return response()->json(['error' => 'Invalid or empty category ID provided'], 400);
             }
-            $posts = Post::where('category_id', $categoryId)->get();
+            $posts = Post::with('user')->where('category_id', $categoryId)->get();
             return response()->json([
                 'success' => true,
                 'message' => 'Post were successfully fetched',
@@ -165,7 +160,7 @@ class PostController extends Controller
             if (empty($postId)) {
                 return response()->json(['error' => 'Invalid or empty ID provided'], 400);
             }
-            $posts = Post::where('id', $postId)->first();
+            $posts = Post::with(['user', 'category', 'tags'])->where('id', $postId)->first();
             if ($posts == null) {
                 return response()->json([
                     'success' => false,
@@ -175,7 +170,7 @@ class PostController extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Post successfully fetched',
-                    'data' =>[
+                    'data' => [
                         'post_detail' => $posts,
                     ]
                 ], 200);
@@ -184,6 +179,127 @@ class PostController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function requestPost(Request $request)
+    {
+        try {
+            $postId = $request->input('post_id');
+            $post = Post::where('id', $postId)->first();
+            $userId = $request->input('user_id');
+            if (RequestQueue::where('post_id', $postId)->where('user_id', $userId)->exists()) {
+                return response()->json(['message' => 'You have already requested this post.'], 400);
+            }
+            $isFirstRequest = !RequestQueue::where('post_id', $postId)->exists();
+            $lastPosition = RequestQueue::where('post_id', $postId)->max('position') ?? 0;
+            $queue_code = null;
+            $request =       RequestQueue::create([
+                'post_id' => $postId,
+                'user_id' => $userId,
+                'position' => $lastPosition + 1
+            ]);
+            $request_queue =RequestQueue::where('post_id', $postId)->where('user_id',$userId);
+            if ($isFirstRequest) {
+                $queue_code = $request->queue_code;
+                $request_queue->update(['status' => Status::REQUESTED]);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Request added to the queue.',
+                    'isFirstRequest' => $isFirstRequest,
+                    'delivery_details' => [
+                        'queue_code' => $queue_code,
+                        'message' => 'Please receive your item in the following location and time with given code. ',
+                        'address' => $post->address,
+                        'contact_number' => $post->phone_number
+                    ]
+                ]);
+            } else {
+                $position = $lastPosition + 1;
+                $request_queue->update(['status' => Status::PENDING_REQUEST]);
+                $message = 'Request added to the queue. You are currently in ';
+                if ($position == 1) {
+                    $message .= $position . 'st in line';
+                } elseif ($position == 2) {
+                    $message .= $position . 'nd in line';
+                } elseif ($position == 3) {
+                    $message .= $position . 'rd in line';
+                } else {
+                    $message .= $position . 'th in line';
+                }
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                    'isFirstRequest' => $isFirstRequest,
+                ]);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function cancelRequest(Request $request)
+    {
+        try {
+            $postId = $request->input('post_id');
+            $userId = $request->input('user_id');
+            $requestQueue = RequestQueue::where('post_id', $postId)->where('user_id', $userId)->first();
+
+            if (!$requestQueue) {
+                return response()->json(['message' => 'Request not found in the queue.'], 404);
+            }
+            RequestQueue::where('post_id', $postId)
+                ->where('position', '>', $requestQueue->position)
+                ->decrement('position');
+
+            $requestQueue->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Request removed from the queue.'
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+
+    public function userRequests(Request $request)
+    {
+        try {
+            $userId = $request->input('user_id');
+            $userRequests = RequestQueue::where('user_id', $userId)
+                ->with(['post', 'post.user'])
+                ->orderBy('position')
+                ->get();
+            if ($userRequests->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No requests found.'
+                ], 200);
+            }
+            return response()->json([
+                'success' => true,
+                'message' => 'List Fetched Successfully.',
+                'user_requests' => $userRequests
+            ]);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'User not found.'
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
             ], 500);
         }
     }

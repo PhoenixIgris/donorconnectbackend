@@ -24,7 +24,10 @@ class Post extends Model
         return $this->belongsTo(User::class,'user_id');
     }
 
-
+    public function requestQueues()
+    {
+        return $this->hasMany(RequestQueue::class);
+    }
     protected function tagId(): Attribute
     {
         return Attribute::make(

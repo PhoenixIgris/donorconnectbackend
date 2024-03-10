@@ -15,7 +15,7 @@ return new class extends Migration
             Schema::table('users', function (Blueprint $table) {
                 $table->string('first_name');
                 $table->string('last_name');
-                $table->string('fmc_token')->unique();;
+                $table->string('fmc_token')->unique()->nullable();;
                 $table->string('phone_number');
             });
     }

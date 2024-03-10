@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Status;
 use App\Filament\Resources\PostResource\Pages;
 use App\Models\Post;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class PostResource extends Resource
@@ -38,8 +40,16 @@ class PostResource extends Resource
                 Forms\Components\Select::make('user_id')
                     ->required()
                     ->relationship('user', 'name'),
+                Forms\Components\Select::make('status')
+                    ->options([
+                        Status::UNVERIFIED => Status::UNVERIFIED,
+                        Status::VERIFIED => Status::VERIFIED,
+                        Status::REQUESTED => Status::REQUESTED,
+                        Status::PENDING_REQUEST => Status::PENDING_REQUEST,
+                        Status::CLOSED => Status::CLOSED
+                    ]),
                 Forms\Components\FileUpload::make('image')
-                ->image()
+                    ->image()
             ]);
     }
 
@@ -70,9 +80,18 @@ class PostResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('status')
+                    ->sortable()
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->options([
+                        Status::UNVERIFIED => Status::UNVERIFIED,
+                        Status::VERIFIED => Status::VERIFIED,
+                        Status::REQUESTED => Status::REQUESTED,
+                        Status::PENDING_REQUEST => Status::PENDING_REQUEST,
+                        Status::CLOSED => Status::CLOSED
+                    ])
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),

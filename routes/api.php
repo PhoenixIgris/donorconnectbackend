@@ -26,6 +26,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::controller(AuthController::class)->group(function(){
     Route::post('login', 'login');
     Route::post('register', 'register');
+    Route::post('logout', 'logout');
 });
 
 
@@ -35,7 +36,9 @@ Route::group(['prefix' => 'post'], function () {
     Route::post('getPost', [PostController::class, 'getPostById']);
     Route::post('getPostsByTags', [PostController::class, 'getPostsByTags']);
     Route::post('getPostsByCategoryId', [PostController::class, 'getPostsByCategoryId']);
-
+    Route::post('requestPost', [PostController::class, 'requestPost']);
+    Route::post('cancelRequest', [PostController::class, 'cancelRequest']);
+    Route::post('userRequests', [PostController::class, 'userRequests']);
 });
 
 
