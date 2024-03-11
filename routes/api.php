@@ -53,6 +53,10 @@ Route::group(['prefix' => 'tag'], function () {
 Route::group(['prefix' => 'content'], function () {
     Route::get('init-content', [ContentController::class, 'getInitContents']);
 });
+Route::get('/map', function () {
+    return view('map');
+});
+
   
 
 
