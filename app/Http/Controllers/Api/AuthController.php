@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Validator;
 use Auth;
+use Exception;
 
 class AuthController extends Controller
 {
@@ -82,6 +83,7 @@ class AuthController extends Controller
         }
     }
 
+<<<<<<< HEAD
     public function edit()
     {
         $user = Auth::user();
@@ -119,3 +121,26 @@ class AuthController extends Controller
         }
     }
 }    
+=======
+    public function logout(Request $request)
+    {
+        $user = Auth::user();
+
+        try {
+
+            $user->tokens()->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Logged out successfully'
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'user' => $user,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+}
+>>>>>>> main

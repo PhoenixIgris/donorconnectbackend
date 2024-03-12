@@ -2,12 +2,14 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Status;
 use App\Filament\Resources\PostResource\Pages;
 use App\Models\Post;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class PostResource extends Resource
@@ -29,20 +31,34 @@ class PostResource extends Resource
                     ->required()
                     ->columnSpanFull()
                     ->maxLength(255),
+                    
                 Forms\Components\Select::make('category_id')
                     ->relationship('category', 'name')
                     ->label('Condition'),
-                Forms\Components\Select::make('tag_id')
-                    ->relationship('tag', 'name')
+                Forms\Components\MultiSelect::make('tag_id')
+                    ->relationship('tags', 'name')
                     ->label('Tag'),
                 Forms\Components\Select::make('user_id')
                     ->required()
                     ->relationship('user', 'name'),
+                Forms\Components\Select::make('status')
+                    ->options([
+                        Status::UNVERIFIED => Status::UNVERIFIED,
+                        Status::VERIFIED => Status::VERIFIED,
+                        Status::REQUESTED => Status::REQUESTED,
+                        Status::PENDING_REQUEST => Status::PENDING_REQUEST,
+                        Status::CLOSED => Status::CLOSED
+                    ]),
+                    Forms\Components\Select::make('pending_request_status')
+                    ->options([
+                        Status::UNVERIFIED => Status::UNVERIFIED,
+                        Status::VERIFIED => Status::VERIFIED,
+                        Status::REQUESTED => Status::REQUESTED,
+                        Status::PENDING_REQUEST => Status::PENDING_REQUEST,
+                        Status::CLOSED => Status::CLOSED
+                    ]),
                 Forms\Components\FileUpload::make('image')
-                ->disk('s3')
-                ->image()
-                ->directory('images')
-                ->preserveFilenames()
+                    ->image()
             ]);
     }
 
@@ -53,6 +69,10 @@ class PostResource extends Resource
                 Tables\Columns\ImageColumn::make('image'),
                 Tables\Columns\TextColumn::make('title')
                     ->searchable(),
+                    Tables\Columns\TextColumn::make('current_request_user_id')
+                    ->numeric(),
+                    Tables\Columns\TextColumn::make('pending_request_status')
+                 ,
                 Tables\Columns\TextColumn::make('desc')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('category.name')
@@ -73,9 +93,18 @@ class PostResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('status')
+                    ->sortable()
             ])
             ->filters([
-                //
+                SelectFilter::make('status')
+                    ->options([
+                        Status::UNVERIFIED => Status::UNVERIFIED,
+                        Status::VERIFIED => Status::VERIFIED,
+                        Status::REQUESTED => Status::REQUESTED,
+                        Status::PENDING_REQUEST => Status::PENDING_REQUEST,
+                        Status::CLOSED => Status::CLOSED
+                    ])
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
