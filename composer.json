@@ -19,7 +19,8 @@
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
         "league/flysystem-aws-s3-v3": "^3.22",
-        "simplesoftwareio/simple-qrcode": "^4.2"
+        "simplesoftwareio/simple-qrcode": "^4.2",
+        "stevebauman/location": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
