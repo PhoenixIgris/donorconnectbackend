@@ -44,6 +44,11 @@ class Post extends Model
         return $this->belongsTo(User::class,'user_id');
     }
 
+
+    public function address()
+    {
+        return $this->belongsTo(Address::class);
+    }
     public function requestQueues()
     {
         return $this->hasMany(RequestQueue::class);

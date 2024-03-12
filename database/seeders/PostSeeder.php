@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Address;
 use App\Models\Post;
 use Illuminate\Database\Seeder;
 
@@ -12,6 +13,18 @@ class PostSeeder extends Seeder
      */
     public function run(): void
     {
+        $addresses = [
+            ['name' => 'Kathmandu', 'latitude' => 27.7172, 'longitude' => 85.3240],
+            ['name' => 'Pokhara', 'latitude' => 28.2639, 'longitude' => 83.9724],
+            ['name' => 'Biratnagar', 'latitude' => 26.4561, 'longitude' => 87.2700],
+            ['name' => 'Lalitpur', 'latitude' => 27.6742, 'longitude' => 85.3240],
+            ['name' => 'Bharatpur', 'latitude' => 27.6789, 'longitude' => 84.4349],
+            ['name' => 'Birgunj', 'latitude' => 27.0104, 'longitude' => 84.8770],
+            ['name' => 'Dharan', 'latitude' => 26.8149, 'longitude' => 87.2849],
+            ['name' => 'Janakpur', 'latitude' => 26.7100, 'longitude' => 85.9249],
+            ['name' => 'Hetauda', 'latitude' => 27.4306, 'longitude' => 85.0299],
+            ['name' => 'Butwal', 'latitude' => 27.7008, 'longitude' => 83.4484],
+        ];
         $posts = [
             [
                 'title' => 'Stylish Winter Coat',
@@ -105,13 +118,16 @@ class PostSeeder extends Seeder
                 'tag_ids' => [10, 11] // Pet Supplies, Outdoor & Gardening
             ],
         ];
-        foreach ($posts as $post) {
+        foreach ($posts as $index => $post) {
             $newPost = new Post();
+            $address = Address::create($addresses[$index]);
             $newPost->title = $post['title'];
             $newPost->category_id = $post['category_id'];
             $newPost->desc = $post['desc'];
             $newPost->image = $post['image'];
             $newPost->user_id = rand(1, 10);
+            $newPost->address()->associate($address);
+            
             $newPost->save();
 
             // Attach tags

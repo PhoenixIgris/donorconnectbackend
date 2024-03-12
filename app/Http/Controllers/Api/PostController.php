@@ -92,7 +92,7 @@ class PostController extends Controller
             ]);
 
             $user_id = $request->input('user_id');
-            $posts = Post::with(['user', 'tags', 'requestQueues'])->get();
+            $posts = Post::with(['user', 'tags', 'requestQueues', 'address'])->get();
 
             return response()->json([
                 'success' => true,
@@ -113,10 +113,8 @@ class PostController extends Controller
                 return response()->json(['error' => 'Invalid or empty tag IDs provided'], 400);
             }
             sort($requiredTagId);
-            $posts = Post::with('user')->where(function ($query) use ($requiredTagId) {
-                foreach ($requiredTagId as $tagId) {
-                    $query->orWhere('tag_id', 'like', "%$tagId%");
-                }
+            $posts = Post::with(['user', 'address', 'tags'])->whereHas('tags', function ($query) use ($requiredTagId) {
+                $query->whereIn('tag_id', $requiredTagId);
             })->get();
             
             return response()->json([
