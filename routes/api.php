@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\MapController;
+use App\Http\Controllers\Api\MapController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
@@ -44,6 +44,9 @@ Route::group(['prefix' => 'post'], function () {
     Route::post('requestPost', [PostController::class, 'requestPost']);
     Route::post('cancelRequest', [PostController::class, 'cancelRequest']);
     Route::post('userRequests', [PostController::class, 'userRequests']);
+    Route::post('bookmarkPost', [PostController::class, 'bookmarkPost']);
+    Route::post('getBookmarkedPosts', [PostController::class, 'getBookmarkedPosts']);
+
 });
 
 
@@ -59,13 +62,16 @@ Route::group(['prefix' => 'content'], function () {
     Route::get('init-content', [ContentController::class, 'getInitContents']);
 });
 
-Route::get('/getPostsByTags', [PostController::class, 'getPostsByTags']);
-//Route::get('/map', [PostController::class, 'getPostsByTags'])->name('posts.by_tags');
 
-  
+
 Route::group(['prefix' => 'map'], function () {
+    Route::post('getLocation', [MapController::class, 'getLocation']);
     Route::get('showMap', [MapController::class, 'showMap']);
+
 });
+  
+
+
 
 
 

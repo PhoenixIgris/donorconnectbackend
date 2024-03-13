@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\Status;
 use App\Http\Controllers\Controller;
+use App\Models\Address;
+use App\Models\Bookmark;
 use App\Models\Post;
 use App\Models\RequestQueue;
 use App\Models\User;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Kreait\Firebase\Factory;
 
@@ -37,6 +40,9 @@ class PostController extends Controller
                 'category_id' => 'nullable|integer',
                 'tag_id' => 'nullable|array',
                 'user_id' => 'required|integer',
+                'address' => 'required|string',
+                'latitude' => 'required|numeric',
+                'longitude' => 'required|numeric',
             ]);
             $taglist = $request->input('tag_id');
             sort($taglist);
@@ -58,15 +64,19 @@ class PostController extends Controller
             ]);
             $publicUrl = "https://{$bucket->name()}.storage.googleapis.com/{$object->name()}";
             $user_id = $request->input('user_id');
-            $user = User::findOrFail($user_id);
+            $address = Address::create([
+                'name' => $request->input('address'),
+                'latitude' => $request->input('latitude'),
+                'longitude' => $request->input('longitude')
+            ]);
             $post = Post::create([
                 'image' => $publicUrl,
                 'title' => $request->input('title'),
                 'desc' => $request->input('desc'),
                 'category_id' => $request->input('category_id'),
                 'user_id' => $user_id,
-                'user_image' => $user->$image
             ]);
+            $post->address()->associate($address);
             $post->save();
             $post->tags()->attach($taglist);
             return response()->json([
@@ -116,7 +126,7 @@ class PostController extends Controller
             $posts = Post::with(['user', 'address', 'tags'])->whereHas('tags', function ($query) use ($requiredTagId) {
                 $query->whereIn('tag_id', $requiredTagId);
             })->get();
-            
+
             return response()->json([
                 'success' => true,
                 'message' => 'Post were successfully fetched',
@@ -138,7 +148,7 @@ class PostController extends Controller
             if (empty($categoryId)) {
                 return response()->json(['error' => 'Invalid or empty category ID provided'], 400);
             }
-            $posts = Post::with('user')->where('category_id', $categoryId)->get();
+            $posts = Post::with('user','tags')->where('category_id', $categoryId)->get();
             return response()->json([
                 'success' => true,
                 'message' => 'Post were successfully fetched',
@@ -257,7 +267,7 @@ class PostController extends Controller
             RequestQueue::where('post_id', $postId)
                 ->where('position', '>', $requestQueue->position)
                 ->decrement('position');;
-                $requestQueue->delete();
+            $requestQueue->delete();
             $smallestPositionRequest = RequestQueue::where('post_id', $postId)
                 ->orderBy('position', 'asc')
                 ->first();
@@ -266,13 +276,13 @@ class PostController extends Controller
                     'current_request_user_id' => $smallestPositionRequest->user_id,
                     'pending_request_status' => Status::PENDING_REQUEST
                 ]);
-            }else{
+            } else {
                 $post->update([
                     'current_request_user_id' => null,
                     'pending_request_status' => Status::VERIFIED
                 ]);
             }
-          
+
 
             return response()->json([
                 'success' => true,
@@ -295,7 +305,7 @@ class PostController extends Controller
         try {
             $userId = $request->input('user_id');
             $userRequests = RequestQueue::where('user_id', $userId)
-                ->with(['post', 'post.user'])
+                ->with(['post', 'post.user','post.tags'])
                 ->orderBy('position')
                 ->get();
             if ($userRequests->isEmpty()) {
@@ -321,4 +331,46 @@ class PostController extends Controller
             ], 500);
         }
     }
+
+    public function bookmarkPost(Request $request)
+    {
+        $userId = $request->input('user_id');
+        $postId = $request->input('post_id');
+        $user = User::find($userId);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $bookmark = Bookmark::where('user_id', $userId)->where('post_id', $postId)->first();
+
+        if ($bookmark) {
+            $user->bookmarks()->detach($postId);
+            $bookmark->delete();
+            return response()->json(['message' => 'Post unbookmarked successfully']);
+        } else {
+            $bookmark = new Bookmark();
+            $bookmark->user_id = $userId;
+            $bookmark->post_id = $postId;
+            $bookmark->save();
+            return response()->json(['message' => 'Post bookmarked successfully']);
+        }  }
+
+
+
+    public function getBookmarkedPosts(Request $request)
+    {
+        $userId = $request->input('user_id');
+        $user = User::find($userId);
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $bookmarkedPosts = $user->bookmarks()->with(['user', 'category', 'tags'])->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => "Posts fetched successfully",
+            'posts' => $bookmarkedPosts]);
+    }
+
 }
