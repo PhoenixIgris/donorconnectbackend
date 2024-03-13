@@ -59,9 +59,7 @@ Route::group(['prefix' => 'content'], function () {
 });
 
 Route::get('/getPostsByTags', [PostController::class, 'getPostsByTags']);
-//Route::get('/map', [PostController::class, 'getPostsByTags'])->name('posts.by_tags');
-  
-//Route::get('/map', [MapController::class, 'showMap']);
+
   
 
 
