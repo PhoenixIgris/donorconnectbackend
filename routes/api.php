@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MapController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
@@ -60,10 +61,11 @@ Route::group(['prefix' => 'content'], function () {
 
 Route::get('/getPostsByTags', [PostController::class, 'getPostsByTags']);
 //Route::get('/map', [PostController::class, 'getPostsByTags'])->name('posts.by_tags');
-  
-//Route::get('/map', [MapController::class, 'showMap']);
-  
 
+  
+Route::group(['prefix' => 'map'], function () {
+    Route::get('showMap', [MapController::class, 'showMap']);
+});
 
 
 

@@ -9,7 +9,7 @@
     <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
-        #map { height: 500px; }
+        #map { height: 1000px; }
     </style>
 </head>
 <body>
