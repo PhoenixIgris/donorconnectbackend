@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,9 +10,12 @@
     <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
-        #map { height: 1000px; }
+        #map {
+            height: 1000px;
+        }
     </style>
 </head>
+
 <body>
     <div id="map"></div>
     <script>
@@ -25,12 +29,20 @@
         // Fetch posts data
         async function fetchPostsData() {
             try {
-                const response = await fetch('/api/getPostsByTags?requiredtagids=[1,2,3]'); // Replace with your actual tag IDs
+                const response = await fetch('/api/post/getPostsByTags?requiredtagids=[1,2,3]', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
                 const data = await response.json();
                 if (data.success) {
                     // Plot markers for each post's address
                     data.posts.forEach(post => {
-                        const { latitude, longitude } = post.address;
+                        const {
+                            latitude,
+                            longitude
+                        } = post.address;
                         L.marker([latitude, longitude]).addTo(map)
                             .bindPopup(`<b>${post.title}</b><br>${post.address.name}`);
                     });
@@ -46,4 +58,5 @@
         fetchPostsData();
     </script>
 </body>
+
 </html>
