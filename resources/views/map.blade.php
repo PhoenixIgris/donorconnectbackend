@@ -10,6 +10,8 @@
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
         #map { height: 500px; }
+        .popup-content { color: #333; }
+        .popup-content b { color: #007BFF; }
     </style>
 </head>
 <body>
@@ -31,8 +33,29 @@
                     // Plot markers for each post's address
                     data.posts.forEach(post => {
                         const { latitude, longitude } = post.address;
-                        L.marker([latitude, longitude]).addTo(map)
-                            .bindPopup(`<b>${post.title}</b><br>${post.address.name}`);
+                        const marker = L.marker([latitude, longitude]).addTo(map);
+                        
+                        // Customize marker color based on tag
+                        switch (post.tags[0].name.toLowerCase()) { // Assuming each post has at least one tag
+                            case 'clothing & accessories':
+                                marker.setIcon(L.icon({ iconUrl: 'https://cdn.mapmarker.io/api/v1/pin?icon=laundry&size=50&background=%23B0E0E6&color=%23FFFFFF&voffset=0&hoffset=1' }));
+                                break;
+                            case 'electronics':
+                                marker.setIcon(L.icon({ iconUrl: 'https://cdn.mapmarker.io/api/v1/pin?icon=technology&size=50&background=%238B4513&color=%23FFFFFF&voffset=0&hoffset=1' }));
+                                break;
+                            default:
+                                marker.setIcon(L.icon({ iconUrl: 'https://cdn.mapmarker.io/api/v1/pin?icon=home&size=50&background=%23FF6347&color=%23FFFFFF&voffset=0&hoffset=1' }));
+                        }
+
+                        // Add popup with post details
+                        const popupContent = `
+                            <div class="popup-content">
+                                <b>${post.title}</b><br>
+                                <p>${post.address.name}</p>
+                                <p>${post.desc}</p>
+                            </div>
+                        `;
+                        marker.bindPopup(popupContent);
                     });
                 } else {
                     console.error('Failed to fetch posts:', data.message);
