@@ -60,5 +60,11 @@ class Post extends Model
             set: fn ($value) => json_encode($value),
         );
     }
+
+    public function bookmarkedBy()
+{
+    return $this->belongsToMany(User::class, 'bookmarks')->withTimestamps();
+}
+
     
 }

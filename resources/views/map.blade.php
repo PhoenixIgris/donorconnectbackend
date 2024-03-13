@@ -9,9 +9,7 @@
     <!-- Leaflet JavaScript -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <style>
-        #map { height: 500px; }
-        .popup-content { color: #333; }
-        .popup-content b { color: #007BFF; }
+        #map { height: 1000px; }
     </style>
 </head>
 <body>

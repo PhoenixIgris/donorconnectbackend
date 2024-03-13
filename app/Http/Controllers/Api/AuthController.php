@@ -62,6 +62,7 @@ class AuthController extends Controller
     {
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
+            
             $token = $user->createToken('DonorConnect')->plainTextToken;
 
             $response = [
