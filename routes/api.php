@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\TagController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ContentController;
+//use App\Http\Controllers\MapController;
 
 
 /*
@@ -26,12 +27,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::controller(AuthController::class)->group(function(){
     Route::post('login', 'login');
     Route::post('register', 'register');
-<<<<<<< HEAD
     Route::get('edit',  'edit');
     Route::put('update',  'update');
-=======
     Route::post('logout', 'logout');
->>>>>>> main
 });
 
 
@@ -59,12 +57,12 @@ Route::group(['prefix' => 'tag'], function () {
 Route::group(['prefix' => 'content'], function () {
     Route::get('init-content', [ContentController::class, 'getInitContents']);
 });
-Route::get('/map', function () {
-    return view('map');
-});
 
+Route::get('/getPostsByTags', [PostController::class, 'getPostsByTags']);
+//Route::get('/map', [PostController::class, 'getPostsByTags'])->name('posts.by_tags');
   
-
+//Route::get('/map', [MapController::class, 'showMap']);
+  
 
 
 

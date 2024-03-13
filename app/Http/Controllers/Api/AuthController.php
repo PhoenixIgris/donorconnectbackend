@@ -52,7 +52,7 @@ class AuthController extends Controller
                 ]
             ];
             return response()->json($response, 200);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             return response()->json($exception->getMessage(), 500);
         }
     }
@@ -83,7 +83,6 @@ class AuthController extends Controller
         }
     }
 
-<<<<<<< HEAD
     public function edit()
     {
         $user = Auth::user();
@@ -116,12 +115,11 @@ class AuthController extends Controller
             ];
     
             return response()->json($response, 200);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             return response()->json($exception->getMessage(), 500);
         }
     }
-}    
-=======
+
     public function logout(Request $request)
     {
         $user = Auth::user();
@@ -143,4 +141,3 @@ class AuthController extends Controller
         }
     }
 }
->>>>>>> main

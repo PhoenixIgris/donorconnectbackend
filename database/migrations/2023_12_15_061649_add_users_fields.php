@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        //
-            Schema::table('users', function (Blueprint $table) {
-                $table->string('first_name');
-                $table->string('last_name');
-                $table->string('fmc_token')->unique()->nullable();;
-                $table->string('phone_number');
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->string('fmc_token')->unique()->nullable();;
+            $table->string('phone_number');
             });
     }
 
@@ -28,7 +27,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('first_name');
             $table->dropColumn('last_name');
-            $table->dropColumn('fmc_token')->unique();;
+            $table->dropColumn('fmc_token')->unique();
             $table->dropColumn('phone_number');
         });
     }
