@@ -80,16 +80,11 @@ class UserSeeder extends Seeder
             ],
         ];
             foreach ($users as $user) {
-                $newUser = new User();
-                $newUser->first_name = $user['first_name'];
-                $newUser->last_name = $user['last_name'];
-                $newUser->email = $user['email'];
-                $newUser->password = Hash::make($user['password']);
-                $newUser->phone_number = $user['phone_number'];
-                $newUser->address = $user['address'];
-                $newUser->name = $user['first_name'] . ' ' . $user['last_name'];
-                $newUser->save();
-            }
+                $user['name']= $user['first_name'] . ' ' . $user['last_name'];
+
+                $user = User::create($user);
+                $success['token'] = $user->createToken('DonorConnect')->plainTextToken;
+                    }
     
     }
 }
