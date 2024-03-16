@@ -39,6 +39,7 @@ Route::group(['prefix' => 'post'], function () {
     Route::post('requestPost', [PostController::class, 'requestPost']);
     Route::post('cancelRequest', [PostController::class, 'cancelRequest']);
     Route::post('userRequests', [PostController::class, 'userRequests']);
+    Route::post('searchPosts', [PostController::class, 'searchposts']);
 });
 
 

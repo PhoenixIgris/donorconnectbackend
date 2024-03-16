@@ -323,4 +323,42 @@ class PostController extends Controller
             ], 500);
         }
     }
+
+    public function searchposts(Request $request)
+{
+
+        $searchQuery = $request->input('search_query');
+        
+
+        $posts = Post::with(['user'])
+        ->where('status', 'unverified')
+              ->get();
+              if($posts->isEmpty()){
+                return response()->json([
+                    'success' => true,
+                    'message' => 'no posts',
+                    'posts' => $posts,
+                ]);
+              }
+$posts =Post::with(['user','tags',  'category'])
+->orWhere('title', 'like', "%$searchQuery%")
+->orWhere('desc', 'like', "%$searchQuery%")
+->orWhereHas('user', function ($query) use ($searchQuery) {
+    $query->where('name', 'like', "%$searchQuery%");
+})
+->orWhereHas('tags', function ($query) use ($searchQuery) {
+    $query->where('name', 'like', "%$searchQuery%");
+})
+->orWhereHas('category', function ($query) use ($searchQuery) {
+    $query->where('name', 'like', "%$searchQuery%");
+})
+->get();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Posts were successfully searched',
+            'posts' => $posts,
+        ]);
+
+}
 }
