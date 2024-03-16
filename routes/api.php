@@ -47,7 +47,7 @@ Route::group(['prefix' => 'post'], function () {
     Route::post('bookmarkPost', [PostController::class, 'bookmarkPost']);
     Route::post('getBookmarkedPosts', [PostController::class, 'getBookmarkedPosts']);
     Route::post('getRecommendedPosts', [PostController::class, 'getRecommendedPosts']);
-
+    Route::post('searchPosts', [PostController::class, 'searchposts']);
 });
 
 
