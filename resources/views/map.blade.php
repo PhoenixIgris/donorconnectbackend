@@ -43,8 +43,13 @@
                             latitude,
                             longitude
                         } = post.address;
-                        L.marker([latitude, longitude]).addTo(map)
+                     const marker=   L.marker([latitude, longitude]).addTo(map)
                             .bindPopup(`<b>${post.title}</b><br>${post.address.name}`);
+                        // Add click event listener to the marker
+                        marker.on('click', function() {
+                            const postJSON = JSON.stringify(post);
+                            Android.onMarkerClick(postJSON);
+                        });
                     });
                 } else {
                     console.error('Failed to fetch posts:', data.message);
