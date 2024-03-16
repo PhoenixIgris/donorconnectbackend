@@ -334,42 +334,40 @@ class PostController extends Controller
     }
 
     public function searchposts(Request $request)
-{
+    {
 
         $searchQuery = $request->input('search_query');
-        
+
 
         $posts = Post::with(['user'])
-        ->where('status', 'unverified')
-              ->get();
-              if($posts->isEmpty()){
-                return response()->json([
-                    'success' => true,
-                    'message' => 'no posts',
-                    'posts' => $posts,
-                ]);
-              }
-$posts =Post::with(['user','tags',  'category'])
-->orWhere('title', 'like', "%$searchQuery%")
-->orWhere('desc', 'like', "%$searchQuery%")
-->orWhereHas('user', function ($query) use ($searchQuery) {
-    $query->where('name', 'like', "%$searchQuery%");
-})
-->orWhereHas('tags', function ($query) use ($searchQuery) {
-    $query->where('name', 'like', "%$searchQuery%");
-})
-->orWhereHas('category', function ($query) use ($searchQuery) {
-    $query->where('name', 'like', "%$searchQuery%");
-})
-->get();
+            ->get();
+        if ($posts->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'no posts',
+                'posts' => $posts,
+            ]);
+        }
+        $posts = Post::with(['user', 'tags',  'category'])
+            ->orWhere('title', 'like', "%$searchQuery%")
+            ->orWhere('desc', 'like', "%$searchQuery%")
+            ->orWhereHas('user', function ($query) use ($searchQuery) {
+                $query->where('name', 'like', "%$searchQuery%");
+            })
+            ->orWhereHas('tags', function ($query) use ($searchQuery) {
+                $query->where('name', 'like', "%$searchQuery%");
+            })
+            ->orWhereHas('category', function ($query) use ($searchQuery) {
+                $query->where('name', 'like', "%$searchQuery%");
+            })
+            ->get();
 
         return response()->json([
             'success' => true,
             'message' => 'Posts were successfully searched',
             'posts' => $posts,
         ]);
-
-}
+    }
 
     public function bookmarkPost(Request $request)
     {
@@ -418,18 +416,21 @@ $posts =Post::with(['user','tags',  'category'])
     {
         try {
             $postId = $request->input('post_id');
-            $post =  Post::with('tags', 'category')->where('id', $postId)->get()->first();
-            $postKeyword = $post->title . ' ' . $post->category->name . ' ';
-            foreach ($post->tags as $tag) {
-                $postKeyword . $tag->name . ' ';
+            $givenpost =  Post::with(['tags', 'category'])->where('id', $postId)->get()->first();
+            $postKeyword = $givenpost->title . ' ' ;
+            $postKeyword .= $givenpost->category->name . ' ';
+            foreach ($givenpost->tags as $tag) {
+                $postKeyword .= $tag->name . ' ';
             }
-            $posts = Post::with('tags', 'category')->where('id', '!=', $postId)->get();
+            $posts = Post::with(['tags', 'category'])->where('id', '!=', $postId)->get();
+            $category ="";
             $keywords = [];
             foreach ($posts as $post) {
-                $keywords[$post->title] = $post->id;
-                $keywords[$post->category->name] = $post->id;
+                $keywords[$post->id] = $post->title . ' ' ;
+                $keywords[$post->id] .=  $post->category->name . ' ';
                 foreach ($post->tags as $tag) {
-                    $keywords[$tag->name] = $post->id;
+                    $keywords[$post->id] .= $tag->name . ' ';
+              
                 }
             }
             $process = new Process(['python3', 'algorithm/cosinealgorithm.py', json_encode($postKeyword), json_encode($keywords)]);
@@ -441,13 +442,14 @@ $posts =Post::with(['user','tags',  'category'])
                 throw new \RuntimeException($process->getErrorOutput());
             }
             $recommended_posts = json_decode($process->getOutput(), true);
+            $ids = collect($recommended_posts['data'])->pluck('id')->toArray();
 
-            $posts = Post::with(['user', 'tags', 'requestQueues', 'address'])->whereIn('id', $recommended_posts)->get();
+            $posts = Post::with(['user', 'tags', 'requestQueues', 'address'])->whereIn('id', $ids)->get();
 
             return response()->json(
                 [
                     'success' => true,
-                    'message' => "Posts fetched successfully",
+                    'message' => "Posts fetched successfully.",
                     'posts' => $posts
                 ]
 
@@ -455,7 +457,7 @@ $posts =Post::with(['user','tags',  'category'])
         } catch (Exception $e) {
             return response()->json(
                 [
-                    'success' => true,
+                    'success' => false,
                     'message' => $e->getMessage(),
                 ]
 

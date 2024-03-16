@@ -117,10 +117,82 @@ class PostSeeder extends Seeder
                 'image' => $this->searchCommons('kit'), // Use the $this->searchCommons function to get the image URL
                 'tag_ids' => [10, 11] // Pet Supplies, Outdoor & Gardening
             ],
+           
+            
+            [
+                'title' => 'Designer Leather Handbag',
+                'category_id' => 1, // New
+                'desc' => 'Elevate your style with our designer leather handbag. Crafted from luxurious leather, its the perfect accessory to complement any outfit. Make a statement wherever you go!',
+                'image' => $this->searchCommons('handbag'), // Use the $this->searchCommons function to get the image URL
+                'tag_ids' => [1, 7] // Clothing & Accessories, Open Box
+            ],
+            [
+                'title' => 'Smart Home Security Camera',
+                'category_id' => 3, // Like New
+                'desc' => 'Keep your home safe and secure with our smart home security camera. With HD video quality and motion detection, you can monitor your home from anywhere. Peace of mind is just a click away!',
+                'image' => $this->searchCommons('security-camera'), // Use the $this->searchCommons function to get the image URL
+                'tag_ids' => [3, 6] // Electronics, Sports & Fitness
+            ],
+            [
+                'title' => 'Classic Literature Collection',
+                'category_id' => 6, // Vintage
+                'desc' => 'Immerse yourself in the world of classic literature with our collection of timeless novels and poetry. From Shakespeare to Austen, rediscover the literary classics that have stood the test of time.',
+                'image' => $this->searchCommons('books'), // Use the $this->searchCommons function to get the image URL
+                'tag_ids' => [4, 11] // Books & Media, Outdoor & Gardening
+            ],
+            [
+                'title' => 'Outdoor Camping Gear Set',
+                'category_id' => 1, // New
+                'desc' => 'Embark on your next outdoor adventure with our camping gear set. Includes tents, sleeping bags, cooking equipment, and more. Explore the great outdoors in comfort and style!',
+                'image' => $this->searchCommons('camping-gear'), // Use the $this->searchCommons function to get the image URL
+                'tag_ids' => [10, 11] // Pet Supplies, Outdoor & Gardening
+            ],
+            [
+                'title' => 'Professional Espresso Machine',
+                'category_id' => 2, // Used
+                'desc' => 'Indulge in cafe-quality espresso at home with our professional espresso machine. With advanced features and sleek design, its perfect for coffee enthusiasts and baristas alike. Start brewing your favorite espresso drinks today!',
+                'image' => $this->searchCommons('espresso-machine'), // Use the $this->searchCommons function to get the image URL
+                'tag_ids' => [2, 12] // Household Items, School & Office Supplies
+            ],
+            [
+                'title' => 'Luxury Skincare Gift Set',
+                'category_id' => 3, // Like New
+                'desc' => 'Treat yourself or someone special to our luxury skincare gift set. Featuring premium skincare products from top brands, its the ultimate pampering experience. Radiant skin awaits!',
+                'image' => $this->searchCommons('skincare'), // Use the $this->searchCommons function to get the image URL
+                'tag_ids' => [3, 8] // Electronics, Health & Beauty
+            ],
+            [
+                'title' => 'Interactive STEM Toys for Kids',
+                'category_id' => 7, // Baby & Kids
+                'desc' => 'Inspire young minds with our collection of interactive STEM toys for kids. From robotics to coding kits, these toys make learning fun and engaging. Spark curiosity and creativity in your child!',
+                'image' => $this->searchCommons('stem-toys'), // Use the $this->searchCommons function to get the image URL
+                'tag_ids' => [5, 10] // Toys & Games, Pet Supplies
+            ],
+            [
+                'title' => 'Premium Protein Powder',
+                'category_id' => 5, // Sports & Fitness
+                'desc' => 'Fuel your workouts and support muscle growth with our premium protein powder. Made from high-quality ingredients, its the perfect post-workout recovery fuel. Achieve your fitness goals faster!',
+                'image' => $this->searchCommons('protein-powder'), // Use the $this->searchCommons function to get the image URL
+                'tag_ids' => [6, 9] // Sports & Fitness, Food & Beverages
+            ],
+            [
+                'title' => 'Vintage Film Camera',
+                'category_id' => 6, // Vintage
+                'desc' => 'Capture timeless moments with our vintage film camera. Fully functional and beautifully crafted, its perfect for photography enthusiasts and collectors alike. Rediscover the art of film photography!',
+                'image' => $this->searchCommons('film-camera'), // Use the $this->searchCommons function to get the image URL
+                'tag_ids' => [4, 3] // Books & Media, Electronics
+            ],
+            [
+                'title' => 'Handmade Artisanal Jewelry',
+                'category_id' => 8, // Custom
+                'desc' => 'Adorn yourself with our handmade artisanal jewelry. Each piece is meticulously crafted by skilled artisans, making it a unique and special addition to your jewelry collection. Make a statement with our one-of-a-kind jewelry!',
+                'image' => $this->searchCommons('jewelry'), // Use the $this->searchCommons function to get the image URL
+                'tag_ids' => [1, 10] // Clothing & Accessories, Pet Supplies
+            ],
         ];
         foreach ($posts as $index => $post) {
             $newPost = new Post();
-            $address = Address::create($addresses[$index]);
+            $address = Address::create($addresses[rand(0,9)]);
             $newPost->title = $post['title'];
             $newPost->category_id = $post['category_id'];
             $newPost->desc = $post['desc'];

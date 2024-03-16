@@ -22,6 +22,16 @@ class CategorySeeder extends Seeder
             ['name' => 'Vintage', 'slug' => 'vintage'],
             ['name' => 'Open Box', 'slug' => 'open-box'],
             ['name' => 'Custom', 'slug' => 'custom'],
+            ['name' => 'Clearance', 'slug' => 'clearance'],
+            ['name' => 'Limited Edition', 'slug' => 'limited-edition'],
+            ['name' => 'Handmade', 'slug' => 'handmade'],
+            ['name' => 'Antique', 'slug' => 'antique'],
+            ['name' => 'Exclusive', 'slug' => 'exclusive'],
+            ['name' => 'Premium', 'slug' => 'premium'],
+            ['name' => 'High-End', 'slug' => 'high-end'],
+            ['name' => 'Discounted', 'slug' => 'discounted'],
+            ['name' => 'Luxury', 'slug' => 'luxury'],
+            ['name' => 'Customized', 'slug' => 'customized'],
         ];
 
         foreach ($categories as $category) {
