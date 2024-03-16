@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Kreait\Firebase\Factory;
+use Symfony\Component\Process\Process;
 
 class PostController extends Controller
 {
@@ -148,7 +149,7 @@ class PostController extends Controller
             if (empty($categoryId)) {
                 return response()->json(['error' => 'Invalid or empty category ID provided'], 400);
             }
-            $posts = Post::with('user','tags')->where('category_id', $categoryId)->get();
+            $posts = Post::with('user', 'tags')->where('category_id', $categoryId)->get();
             return response()->json([
                 'success' => true,
                 'message' => 'Post were successfully fetched',
@@ -305,7 +306,7 @@ class PostController extends Controller
         try {
             $userId = $request->input('user_id');
             $userRequests = RequestQueue::where('user_id', $userId)
-                ->with(['post', 'post.user','post.tags'])
+                ->with(['post', 'post.user', 'post.tags'])
                 ->orderBy('position')
                 ->get();
             if ($userRequests->isEmpty()) {
@@ -353,7 +354,8 @@ class PostController extends Controller
             $bookmark->post_id = $postId;
             $bookmark->save();
             return response()->json(['message' => 'Post bookmarked successfully']);
-        }  }
+        }
+    }
 
 
 
@@ -370,7 +372,56 @@ class PostController extends Controller
         return response()->json([
             'success' => true,
             'message' => "Posts fetched successfully",
-            'posts' => $bookmarkedPosts]);
+            'posts' => $bookmarkedPosts
+        ]);
     }
 
+    public function getRecommendedPosts(Request $request)
+    {
+        try {
+            $postId = $request->input('post_id');
+            $post =  Post::with('tags', 'category')->where('id', $postId)->get()->first();
+            $postKeyword = $post->title . ' ' . $post->category->name . ' ';
+            foreach ($post->tags as $tag) {
+                $postKeyword . $tag->name . ' ';
+            }
+            $posts = Post::with('tags', 'category')->where('id', '!=', $postId)->get();
+            $keywords = [];
+            foreach ($posts as $post) {
+                $keywords[$post->title] = $post->id;
+                $keywords[$post->category->name] = $post->id;
+                foreach ($post->tags as $tag) {
+                    $keywords[$tag->name] = $post->id;
+                }
+            }
+            $process = new Process(['python3', 'algorithm/cosinealgorithm.py', json_encode($postKeyword), json_encode($keywords)]);
+            $process->run();
+
+            // Execute Python script and get recommended posts
+
+            if (!$process->isSuccessful()) {
+                throw new \RuntimeException($process->getErrorOutput());
+            }
+            $recommended_posts = json_decode($process->getOutput(), true);
+
+            $posts = Post::with(['user', 'tags', 'requestQueues', 'address'])->whereIn('id', $recommended_posts)->get();
+
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => "Posts fetched successfully",
+                    'posts' => $posts
+                ]
+
+            );
+        } catch (Exception $e) {
+            return response()->json(
+                [
+                    'success' => true,
+                    'message' => $e->getMessage(),
+                ]
+
+            );
+        }
+    }
 }
