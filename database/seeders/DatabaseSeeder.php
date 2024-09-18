@@ -23,8 +23,12 @@ class DatabaseSeeder extends Seeder
         // ]);
 
         User::create([
-            "name"=>"sachita",
+            "first_name"=>"sachita",
+            "last_name"=>"shrestha",
+            "name" => "sachita shrestha",
             "email"=>"sachitaadmin@gmail.com",
+            'phone_number' => '1234567890',
+             'address' => '456 Oak Avenue',
             "password"=>Hash::make('password')
         ]);
 
